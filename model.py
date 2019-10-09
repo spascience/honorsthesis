@@ -21,6 +21,7 @@ Mukherji, S. (2014). Generative Musical Grammar-A Minimalist Approach.
 
 Sean P. Anderson, seanpaul@umich.edu
 Generative Linguistics And Music grant
+Professors S. Mukherji, S. Epstein, and J. Zhang, University of Michigan
 October 6, 2019
 
 Done in work for undergraduate Honors Thesis

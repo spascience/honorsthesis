@@ -1,4 +1,4 @@
-# Minimalist model of human composition
+Minimalist model of human composition
 =======================================
 
 Sean Anderson, 10/6/2019
