@@ -6,5 +6,6 @@ Cognitive Science Honors Thesis Project
 Advisor: Professor Somangshu Mukherji
 
 Generative Linguistics And Music grant
+Prof. Somangshu Mukherji
 Prof. Samuel D. Epstein
 Prof. Jun Zhang
