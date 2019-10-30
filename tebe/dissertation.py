@@ -6,6 +6,8 @@ in pages 337-365 of Prof. Mukherji's dissertation (2014).
 
 """
 
+import numpy as np # for random action
+
 class Stufe:
     # Circle of Fifths in sharps, octave equivalence
     FIFTHS_NAMES = ['C','G','D','A','E','B',
@@ -51,11 +53,12 @@ class SyntacticObject:
 class Model:
     def __init__(self, western=True):
         # options for Western Tonality and Rock merge parameters
-        self.merge_positive = western
+        self.merge_negative = western
 
         self.stufen = { Stufe(i, i) for i in range(-12,13) }
 
         # fixme: test
+        print("Stufen\n======")
         print(self.stufen)
 
     def agree(self, s1, s2):
@@ -68,7 +71,7 @@ class Model:
         :return: boolean
         """
 
-        if self.merge_positive:
+        if self.merge_negative:
             # western tonal
             return (s2.cf + 1) == s1.cf
             # TODO: thirds relationship
@@ -92,7 +95,7 @@ class Model:
         later: cycle-based derivation?
         Checks if current derivation contains the Ursatz
         as its deepest structure.
-        (yes, this is a scaringly large filter)
+        (yes, this is a scaringly encompassing filter)
 
 
         :param workspace: SyntacticObject
@@ -103,9 +106,35 @@ class Model:
         tonic_cf = workspace.cf
         tonic_ct = workspace.ct
 
-        if self.merge_positive:
-            if workspace.items[0].cf == tonic_cf \ # tonic prolongation
-                and workspace.items[1].items[0] == tonic_cf + 1:
+        if self.merge_negative:
+            if (workspace.items[0].cf == tonic_cf and  # tonic prolongation
+                workspace.items[1].items[0] == tonic_cf + 1):
                 # Tonic Prolongation, Dominant Prolongation, Tonic Completion
                 return True
-        else: return False
+        else:
+            # TODO: Rock music
+            return False
+
+    def generate(self, n=1, select=None):
+        """
+        Stochastically generates an ordering of stufen using Merge.
+        (Regarding C & S 2011: Assumes Select is applied once
+        at the beginning of the derivation)
+
+        :param n: number of syntactic objects to generate
+        :select: ordered collection of Stufe; all that you want available
+                 for the generation. If "None" then uses all available
+        :return: SyntacticObject
+        """
+
+        # begin
+        if not select:
+            select = self.stufen
+
+        derivation = None
+        while not self.filter(derivation)
+        #TODO: BRUH. think first, then implement
+
+        # pick two random stufen and see if they agree
+        s1_i, s2_i = np.random.randint(0, len(select), size=2)
+        s1, s2 = select[s1], select[s2]
