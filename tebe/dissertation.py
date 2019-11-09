@@ -3,10 +3,12 @@ dissertation.py
 
 An attempt at implementing the generative model described
 in pages 337-365 of Prof. Mukherji's dissertation (2014).
+Takes mathematical inspiration from Collins & Stabler (2011).
 
 """
 
 import numpy as np # for random action
+import random
 
 class Stufe:
     # Circle of Fifths in sharps, octave equivalence
@@ -90,7 +92,7 @@ class Model:
         """
         return SyntacticObject(s1, s2)
 
-    def filter(self, workspace):
+    def filter(self, root):
         """
         later: cycle-based derivation?
         Checks if current derivation contains the Ursatz
@@ -98,43 +100,79 @@ class Model:
         (yes, this is a scaringly encompassing filter)
 
 
-        :param workspace: SyntacticObject
+        :param root: SyntacticObject
         :return: boolean
         """
 
         # should work for any key
-        tonic_cf = workspace.cf
-        tonic_ct = workspace.ct
+        tonic_cf = root.cf
+        tonic_ct = root.ct
 
         if self.merge_negative:
-            if (workspace.items[0].cf == tonic_cf and  # tonic prolongation
-                workspace.items[1].items[0] == tonic_cf + 1):
+            if (root.items[0].cf == tonic_cf and  # tonic prolongation
+                root.items[1].items[0] == tonic_cf + 1):
                 # Tonic Prolongation, Dominant Prolongation, Tonic Completion
                 return True
         else:
             # TODO: Rock music
             return False
 
-    def generate(self, n=1, select=None):
+    def get_agreeable_features(self, stufe):
+        """
+        Determines stufen that would be legally Merge-able
+        with stufe and returns their syntactic features.
+
+        :param stufe: Stufe or SyntacticObject
+        :return: ordered iterable of ints
+        """
+
+        # TODO: implement
+        # TODO: thirds relationship
+        raise NotImplementedError
+
+    def generate_v3(self, n=10, lexicon=None):
         """
         Stochastically generates an ordering of stufen using Merge.
-        (Regarding C & S 2011: Assumes Select is applied once
-        at the beginning of the derivation)
+        Uses a stochastic, Agree-driven Select style. That is,
+        Agree is applied first to an SO in the Workspace and
+        a stufe with correct syntactic features is Selected.
+        Filter/Transfer is applied after every occurence of Merge.
 
         :param n: number of syntactic objects to generate
-        :select: ordered collection of Stufe; all that you want available
-                 for the generation. If "None" then uses all available
+        :lexicon: ordered collection of Stufe; all that you want available
+                  for the generation. If "None" then uses all available
         :return: SyntacticObject
         """
 
         # begin
-        if not select:
-            select = self.stufen
+        if not lexicon:
+            lexicon = self.stufen
 
-        derivation = None
-        while not self.filter(derivation)
-        #TODO: BRUH. think first, then implement
+        lexicon_by_cf = { s.cf: s for s in lexicon }
+        # TODO: add thirds relationship
 
-        # pick two random stufen and see if they agree
-        s1_i, s2_i = np.random.randint(0, len(select), size=2)
-        s1, s2 = select[s1], select[s2]
+        # randomly add two stufen to the workspace (initial Select)
+        workspace = random.sample(lexicon, 2)
+
+        num_generated = 0
+        completed = list()
+        while num_generated < n:
+            current_i = random.choice(range(len(workspace)))
+            current = workspace[current_i]
+
+            # get agreeable features
+            agreeables = self.get_agreeable_features(current)
+
+            # Select legal stufe, merge that one
+            # TODO: check if no stufen with legal features are in lexicon,
+            #       if so, Crash
+            selected = lexicon_by_cf[agreeables[0]]
+            m = self.merge(current, selected)
+            workspace[current_i] = m
+
+            # check for completed derivations
+            if self.filter(m):
+                # "Transfer"
+                completed.append(m)
+
+        return completed
