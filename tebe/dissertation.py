@@ -50,6 +50,9 @@ class SyntacticObject:
         # recursively access contained stufen
         return f"[{str(self.items[0])}, {str(self.items[1])}]"
 
+    def __repr__(self):
+        return f"[{str(self.items[0])}, {str(self.items[1])}]"
+
 
 class Model:
     def __init__(self, western=True):
@@ -60,7 +63,8 @@ class Model:
 
         # fixme: test
         print("Stufen\n======")
-        print(str(self.stufen))
+        for s in self.stufen:
+            print(s)
 
     def agree(self, s1, s2):
         """
@@ -154,10 +158,17 @@ class Model:
         mergers = list()
         # TODO: make more general
         merger_features = [stufe.cf + 1]
+
+        # BLOCK repeated merges
+        if type(stufe) == SyntacticObject and type(stufe.items[0]) == Stufe:
+            # only one stufe between merger and mergee, remove repeated stufe
+            for i in range(len(merger_features)):
+                if merger_features[i] == stufe.items[0].cf:
+                    merger_features.pop(i)
+
         for feature in merger_features:
             if feature in lexicon_by_feature:
                 mergers.append(lexicon_by_feature[feature])
-
 
         # TODO: more elegant way to do this?
         if len(mergee_features) + len(merger_features) == 0:
@@ -200,6 +211,14 @@ class Model:
             current = workspace[current_i]
 
             merges = self.get_possible_merges(current, lexicon_by_cf)
+
+            # crash clause
+            if len(merges) == 0:
+                print("Derivation Crashed")
+                print("current stage: ")
+                print(workspace)
+                return completed
+
             choice = random.choice(merges)
 
             m = self.merge(choice[0], choice[1])
