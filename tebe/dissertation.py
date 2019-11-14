@@ -7,14 +7,13 @@ Takes mathematical inspiration from Collins & Stabler (2011).
 
 """
 
-import numpy as np # for random action
 import random
 
 class Stufe:
     # Circle of Fifths in sharps, octave equivalence
     FIFTHS_NAMES = ['C','G','D','A','E','B',
                     'F#','C#','G#','D#','A#','F']
-    # TODO: Circle of Thirds relationships
+    # TODO: (Diatonic) Circle of Thirds relationships
 
     def __init__(self, cf=0, ct=0):
         # default ctor
@@ -126,9 +125,49 @@ class Model:
         :return: ordered iterable of ints
         """
 
-        # TODO: implement
+        if self.merge_negative:
+            return list(stufe.cf - 1)
+        else:
+            return list(stufe.cf + 1)
+
         # TODO: thirds relationship
-        raise NotImplementedError
+
+    def get_possible_merges(self, stufe, lexicon_by_feature):
+        """
+        Returns an ordered iterable of all possible Merges
+        with stufe within the provided workspace
+        :param stufe: SyntacticObject
+        :param lexicon_by_feature: map ints to Stufen
+        :return: tuple of tuples of SyntacticObjects
+        """
+
+        # TODO: thirds relationship
+
+        # merge-TO-ables
+        mergees = list()
+        mergee_features = self.get_agreeable_features(stufe)
+        for feature in mergee_features:
+            if feature in lexicon_by_feature:
+                mergees.append(lexicon_by_feature[feature])
+
+        # merge-FROM-ables
+        mergers = list()
+        # TODO: make more general
+        merger_features = list(stufe.cf + 1)
+        for feature in merger_features:
+            if feature in lexicon_by_feature:
+                mergers.append(lexicon_by_feature[feature])
+
+
+        # TODO: more elegant way to do this?
+        if len(mergee_features) + len(merger_features) == 0:
+            return ()
+
+        # package possible merges
+        merges_TO = tuple( (stufe, mergee) for mergee in mergees )
+        merges_FROM = tuple( (merger, stufe) for merger in mergers )
+
+        return merges_TO + merges_FROM
 
     def generate_v3(self, n=10, lexicon=None):
         """
@@ -160,19 +199,16 @@ class Model:
             current_i = random.choice(range(len(workspace)))
             current = workspace[current_i]
 
-            # get agreeable features
-            agreeables = self.get_agreeable_features(current)
+            merges = self.get_possible_merges(current, lexicon_by_cf)
+            choice = random.choice(merges)
 
-            # Select legal stufe, merge that one
-            # TODO: check if no stufen with legal features are in lexicon,
-            #       if so, Crash
-            selected = lexicon_by_cf[agreeables[0]]
-            m = self.merge(current, selected)
+            m = self.merge(choice[0], choice[1])
             workspace[current_i] = m
 
             # check for completed derivations
             if self.filter(m):
                 # "Transfer"
                 completed.append(m)
+                num_generated += 1
 
         return completed
