@@ -60,7 +60,7 @@ class Model:
 
         # fixme: test
         print("Stufen\n======")
-        print(self.stufen)
+        print(str(self.stufen))
 
     def agree(self, s1, s2):
         """
@@ -126,9 +126,9 @@ class Model:
         """
 
         if self.merge_negative:
-            return list(stufe.cf - 1)
+            return [stufe.cf - 1]
         else:
-            return list(stufe.cf + 1)
+            return [stufe.cf + 1]
 
         # TODO: thirds relationship
 
@@ -153,7 +153,7 @@ class Model:
         # merge-FROM-ables
         mergers = list()
         # TODO: make more general
-        merger_features = list(stufe.cf + 1)
+        merger_features = [stufe.cf + 1]
         for feature in merger_features:
             if feature in lexicon_by_feature:
                 mergers.append(lexicon_by_feature[feature])
@@ -212,3 +212,17 @@ class Model:
                 num_generated += 1
 
         return completed
+
+    def spell_out(self, generated):
+        """
+        Prints the generated compositions in a pretty way.
+
+        :param generated: list of SyntacticObjects
+        :return: nothing
+        """
+
+        print("Compositions\n============\n")
+
+        for comp in generated:
+            print(comp)
+            print('\n')
