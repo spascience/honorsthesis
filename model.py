@@ -27,6 +27,8 @@ October 6, 2019
 Done in work for undergraduate Honors Thesis
 """
 
+import random
+
 
 class Stufe:
     """Musical equivalent of "Lexical Item"
@@ -103,7 +105,7 @@ class Composer:
     """
     class Stage:
         # For Select to operate on, to be consistent with C&S 2011
-        def __init__(self, la=set(), w=set()):
+        def __init__(self, la=set(), workspace=set()):
             """
             default ctor
             :param la: set of Stufe objs
@@ -112,10 +114,10 @@ class Composer:
             # Lexical Array
             self.la = la
             # Workspace
-            self.w = w
+            self.workspace = workspace
 
         def __str__(self):
-            return f"<{str(self.la)}, {str(self.w)}>"
+            return f"<{str(self.la)}, {str(self.workspace)}>"
 
     def __init__(self):
         self.stage_i = 0
@@ -131,10 +133,13 @@ class Composer:
 
         is_tonic = (so.c5 == 0)
         has_dominant = False
+        starts_with_tonic = False
+
         if isinstance(so.items[1], SyntacticObject):
             has_dominant = (so.items[1].items[0].c5 == 1)
 
-        starts_with_tonic = self._filter_helper(so.items[0])
+        if is_tonic and has_dominant:
+            starts_with_tonic = self._filter_helper(so.items[0])
 
         return is_tonic and has_dominant and starts_with_tonic
 
@@ -150,6 +155,61 @@ class Composer:
         else:
             return self._filter_helper(so.items[0])
 
+    def select(self, item: Stufe, stage: Stage) -> Stage:
+        """
+        Select as defined in C&S. Moves an item from LA into
+        Workspace.
+        R: item in Stage.la
+
+        :param item: Stufe
+        :param stage: Stage
+        :return: Stage
+        """
+        stage.la = stage.la - item
+        # fixme: won't handle multiple copies of same stufe
+        # shouldn't be a problem for tebe though
+        stage.workspace.add(item)
+        return stage
+
+    def select_random(self, stage: Stage) -> Stage:
+        """
+        Moves a random Stufe from the LexicalArray to
+        the Workspace.
+        R: not Stage.la.empty()
+
+        :param stage: Composer.Stage
+        :return: Composer.Stage
+        """
+        # oof TODO: consider not using hash tables
+        item = random.choice(tuple(stage.la))
+        return self.select(item, stage)
+
+    def merge(self, so1, so2, stage: Stage) -> Stage:
+        """
+        Performs external Merge on two SO's in stage.workspace
+        as defined in C&S.
+        R: s01, s02 in stage.workspace
+
+        :param s01: Stufe or SyntacticObject
+        :param s02: Stufe or SyntacticObject
+        :param stage: Composer.Stage
+        :return: Stage
+        """
+        stage.workspace = ((stage.workspace - s01) - so2)
+        stage.workspace.add(SyntacticObject(so1, so2))
+        return stage
+
+    def merge_random(self, stage: Stage) -> Stage:
+        """
+        Performs Merge on two random SO's in stage.workspace.
+
+        :param stage: Stage
+        :return: stage
+        """
+        # oof TODO: consider not using hash tables
+        so1, so2 = random.sample(tuple(stage.workspace), 2)
+        return self.merge(so1, so2, stage)
+
     def derive(self, la):
         """
         Executes a derivation starting with LexicalArray la.
@@ -158,6 +218,12 @@ class Composer:
         :param la: collection of Stufe objs
         :return: collection of derivations
         """
-        pass
+
+        if len(la) < 2:
+            print("Error: You need more than 2 Stufen to compose")
+            return list()
+
+        # set up (select 2)
+        current = Composer.Stage(la=set(la))
 
 
