@@ -9,11 +9,14 @@ Takes mathematical inspiration from Collins & Stabler (2011).
 
 import random
 
+
 class Stufe:
     # Circle of Fifths in sharps, octave equivalence
-    FIFTHS_NAMES = ['C','G','D','A','E','B',
-                    'F#','C#','G#','D#','A#','F']
+    FIFTHS_NAMES = ['C', 'G', 'D', 'A', 'E', 'B',
+                    'F#', 'C#', 'G#', 'D#', 'A#', 'F']
+
     # TODO: (Diatonic) Circle of Thirds relationships
+    # FIXME: Octave equivalence
 
     def __init__(self, cf=0, ct=0):
         # default ctor
@@ -30,6 +33,7 @@ class Stufe:
 
     def __str__(self):
         return f"{self.name}: c5 = {self.cf}, c3 = {self.ct}"
+
 
 class SyntacticObject:
     def __init__(self, m1, m2):
@@ -59,7 +63,7 @@ class Model:
         # options for Western Tonality and Rock merge parameters
         self.merge_negative = western
 
-        self.stufen = { Stufe(i, i) for i in range(-12,13) }
+        self.stufen = {Stufe(i, i) for i in range(-12, 13)}
 
         # fixme: test
         print("Stufen\n======")
@@ -113,7 +117,7 @@ class Model:
 
         if self.merge_negative:
             if (root.items[0].cf == tonic_cf and  # tonic prolongation
-                root.items[1].items[0] == tonic_cf + 1):
+                    root.items[1].items[0] == tonic_cf + 1):
                 # Tonic Prolongation, Dominant Prolongation, Tonic Completion
                 return True
         else:
@@ -160,11 +164,11 @@ class Model:
         merger_features = [stufe.cf + 1]
 
         # BLOCK repeated merges
-        if type(stufe) == SyntacticObject and type(stufe.items[0]) == Stufe:
-            # only one stufe between merger and mergee, remove repeated stufe
-            for i in range(len(merger_features)):
-                if merger_features[i] == stufe.items[0].cf:
-                    merger_features.pop(i)
+        # if type(stufe) == SyntacticObject and type(stufe.items[0]) == Stufe:
+        #    # only one stufe between merger and mergee, remove repeated stufe
+        #    for i in range(len(merger_features)):
+        #        if merger_features[i] == stufe.items[0].cf:
+        #            merger_features.pop(i)
 
         for feature in merger_features:
             if feature in lexicon_by_feature:
@@ -175,8 +179,8 @@ class Model:
             return ()
 
         # package possible merges
-        merges_TO = tuple( (stufe, mergee) for mergee in mergees )
-        merges_FROM = tuple( (merger, stufe) for merger in mergers )
+        merges_TO = tuple((stufe, mergee) for mergee in mergees)
+        merges_FROM = tuple((merger, stufe) for merger in mergers)
 
         return merges_TO + merges_FROM
 
@@ -198,7 +202,7 @@ class Model:
         if not lexicon:
             lexicon = self.stufen
 
-        lexicon_by_cf = { s.cf: s for s in lexicon }
+        lexicon_by_cf = {s.cf: s for s in lexicon}
         # TODO: add thirds relationship
 
         # randomly add two stufen to the workspace (initial Select)
@@ -229,6 +233,10 @@ class Model:
                 # "Transfer"
                 completed.append(m)
                 num_generated += 1
+            else:
+                print("stage")
+                print(workspace)
+                print()
 
         return completed
 
