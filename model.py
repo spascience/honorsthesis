@@ -77,20 +77,20 @@ class SyntacticObject:
 class LexicalArray:
     # make Lexical Array explicit
     def __init__(self, items):
-        """
-        #default ctor
-        #:param items: collection of Stufe
-        """
+        
+        default ctor
+        :param items: collection of Stufe
+        
         self.items = set(items)
 
 
 class Workspace:
     # make Workspace explicit
     def __init__(self, items):
-        """
-        #default ctor
-        #:param items: collection of syntactic objects
-        """
+        
+        default ctor
+        :param items: collection of syntactic objects
+        
         self.items = set(items)
 """
 
@@ -165,7 +165,7 @@ class Composer:
         :param stage: Stage
         :return: Stage
         """
-        stage.la = stage.la - item
+        stage.la = stage.la - {item}
         # fixme: won't handle multiple copies of same stufe
         # shouldn't be a problem for tebe though
         stage.workspace.add(item)
@@ -184,20 +184,22 @@ class Composer:
         item = random.choice(tuple(stage.la))
         return self.select(item, stage)
 
-    def merge(self, so1, so2, stage: Stage) -> Stage:
+    def merge(self, so1, so2, stage: Stage) -> SyntacticObject:
         """
         Performs external Merge on two SO's in stage.workspace
         as defined in C&S.
-        R: s01, s02 in stage.workspace
+        REQUIRES: s01, s02 in stage.workspace
+        MODIFIES: stage
 
         :param s01: Stufe or SyntacticObject
         :param s02: Stufe or SyntacticObject
         :param stage: Composer.Stage
-        :return: Stage
+        :return: SyntacticObject
         """
-        stage.workspace = ((stage.workspace - s01) - so2)
-        stage.workspace.add(SyntacticObject(so1, so2))
-        return stage
+        stage.workspace = ((stage.workspace - {so1}) - {so2})
+        new_so = SyntacticObject(so1, so2)
+        stage.workspace.add(new_so)
+        return new_so
 
     def merge_random(self, stage: Stage) -> Stage:
         """
@@ -224,6 +226,58 @@ class Composer:
             return list()
 
         # set up (select 2)
+        derivations = list()
         current = Composer.Stage(la=set(la))
+        current = self.select_random(current)
+        current = self.select_random(current)
+        self.stage_i = 2
+
+        # derivation
+        while len(current.la) > 0 or len(current.workspace) != 1:
+            flip = random.choice([0,1])
+            if flip and len(current.la) > 0:
+                # Select
+                current = self.select_random(current)
+            elif not flip and len(current.workspace) != 1:
+                # Merge
+                new_so = self.merge_random(current)
+                # Filter and spell out
+                if self.filter(new_so):
+                    # found a valid derivation!
+                    derivations.append(new_so)
+
+            self.stage_i += 1
+            # FIXME: test
+            print(f"Stage #{self.stage_i}:")
+            print(current)
+            print()
+
+        # end of derivation
+        if self.filter(list(current.workspace)[0]):  # awk
+            print("Derivation finished")
+        else:
+            # derivation crashed
+            print("Derivation crashed")
+
+        return derivations
 
 
+def main():
+    # tebe testing
+    # all stufen hypothesized to be in Bortniansky's Tebe Poem
+    lexicon = [0, 0, -1, 2, 1, 4, 0, 6, 1, 0]
+    lexical_array = list()
+
+    for c5 in lexicon:
+        lexical_array.append(Stufe(c5=c5))
+
+    model = Composer()
+    derivations = model.derive(lexical_array)
+
+    print("All Derivations\n===============")
+    print(derivations)
+
+    return 0
+
+if __name__ == "__main__":
+    main()
