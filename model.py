@@ -36,9 +36,12 @@ class Stufe:
     # Circle of Fifths in sharps, octave equivalence
     FIFTHS_NAMES = ['C', 'G', 'D', 'A', 'E', 'B',
                     'F#', 'C#', 'G#', 'D#', 'A#', 'F']
+    FIFTHS_NAMES_MINOR = ['a', 'e', 'b', 'f#', 'c#', 'g#',
+                          'd#', 'a#', 'f', 'c', 'g', 'd']
 
-    def __init__(self, c5=0, c3=0):
+    def __init__(self, c5=0, c3=0, major=True):
         # default ctor
+        self.is_major = major
         # circle of fifths value
         self.c5 = c5
         # circle of thirds value
@@ -48,7 +51,10 @@ class Stufe:
 
     def get_name(self):
         # should work for negative cf too
-        return self.FIFTHS_NAMES[self.c5 % 12]
+        if self.is_major:
+            return self.FIFTHS_NAMES[self.c5 % 12]
+        else:
+            return self.FIFTHS_NAMES_MINOR[self.c5 % 12]
 
     def __str__(self):
         return f"{self.name}: c5 = {self.c5}"
@@ -265,11 +271,13 @@ class Composer:
 def main():
     # tebe testing
     # all stufen hypothesized to be in Bortniansky's Tebe Poem
-    lexicon = [0, 0, -1, 2, 1, 4, 0, 6, 1, 0]
+    lexicon = [(0, True), (0, True), (-1, True),
+               (2, True), (1, True), (4, True), (0, False),
+               (6, True), (1, True), (0, True)]
     lexical_array = list()
 
-    for c5 in lexicon:
-        lexical_array.append(Stufe(c5=c5))
+    for c5, is_major in lexicon:
+        lexical_array.append(Stufe(c5=c5, major=is_major))
 
     model = Composer()
     derivations = model.derive(lexical_array)
@@ -278,6 +286,7 @@ def main():
     print(derivations)
 
     return 0
+
 
 if __name__ == "__main__":
     main()
