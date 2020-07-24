@@ -79,6 +79,27 @@ class SyntacticObject:
         # recursively access contained stufen
         return f"[{str(self.items[0])}, {str(self.items[1])}]"
 
+    def spell_out(self):
+        """
+        Returns a string of the surface chords in this SO.
+        String does not represent tree structure.
+
+        :return: str
+        """
+        return self._spell_out_helper(self)[:-1]
+
+    def _spell_out_helper(self, so):
+        """
+        Recursively access string of surface chord
+        :param so: SyntacticObject
+        :return: str
+        """
+        if isinstance(so, Stufe):
+            return so.name + ' '
+        else:
+            return self._spell_out_helper(so.items[0]) \
+                   + self._spell_out_helper(so.items[1])
+
 """
 class LexicalArray:
     # make Lexical Array explicit
@@ -224,7 +245,7 @@ class Composer:
         Every SO generated that passes Filter will be spelled out.
 
         :param la: collection of Stufe objs
-        :return: collection of derivations
+        :return: collection of derivations, bool
         """
 
         if len(la) < 2:
@@ -261,11 +282,41 @@ class Composer:
         # end of derivation
         if self.filter(list(current.workspace)[0]):  # awk
             print("Derivation finished")
+            return derivations, True
         else:
             # derivation crashed
             print("Derivation crashed")
+            return derivations, False
 
-        return derivations
+
+def tebe_search(model: Composer) -> SyntacticObject:
+    """
+    Continuously generates surfaces until Tebe poem is found.
+    :param model: Composer
+    :return: SyntacticObject
+    """
+    # all stufen hypothesized to be in Bortniansky's Tebe Poem
+    lexicon = [(0, True), (0, True), (-1, True),
+               (2, True), (1, True), (4, True), (0, False),
+               (6, True), (1, True), (0, True)]
+    TEBE = "C C F D G E a F# G C"
+    lexical_array = list()
+
+    for c5, is_major in lexicon:
+        lexical_array.append(Stufe(c5=c5, major=is_major))
+
+    all_derivations = list()
+    spelled = list()
+    count = 0
+
+    # check for tebe, derive again if necessary
+    while TEBE not in spelled:
+        count += 1
+        new = model.derive(lexical_array)
+        spelled = [ d.spell_out() for d in new ]
+        all_derivations.extend(new)
+
+    return spelled, count, all_derivations
 
 
 def main():
@@ -280,10 +331,12 @@ def main():
         lexical_array.append(Stufe(c5=c5, major=is_major))
 
     model = Composer()
-    derivations = model.derive(lexical_array)
+    derivations, success = model.derive(lexical_array)
 
     print("All Derivations\n===============")
     print(derivations)
+    if len(derivations) > 0:
+        print(derivations[-1].spell_out())
 
     return 0
 
