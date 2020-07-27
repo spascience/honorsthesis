@@ -239,7 +239,7 @@ class Composer:
         so1, so2 = random.sample(tuple(stage.workspace), 2)
         return self.merge(so1, so2, stage)
 
-    def derive(self, la):
+    def derive(self, la, verbose=True):
         """
         Executes a derivation starting with LexicalArray la.
         Every SO generated that passes Filter will be spelled out.
@@ -254,7 +254,7 @@ class Composer:
 
         # set up (select 2)
         derivations = list()
-        current = Composer.Stage(la=set(la))
+        current = Composer.Stage(la=set(la), workspace=set())
         current = self.select_random(current)
         current = self.select_random(current)
         self.stage_i = 2
@@ -274,10 +274,10 @@ class Composer:
                     derivations.append(new_so)
 
             self.stage_i += 1
-            # FIXME: test
-            print(f"Stage #{self.stage_i}:")
-            print(current)
-            print()
+            if verbose:
+                print(f"Stage #{self.stage_i}:")
+                print(current)
+                print()
 
         # end of derivation
         if self.filter(list(current.workspace)[0]):  # awk
@@ -289,7 +289,7 @@ class Composer:
             return derivations, False
 
 
-def tebe_search(model: Composer) -> SyntacticObject:
+def tebe_search(model: Composer) -> (int, int, list):
     """
     Continuously generates surfaces until Tebe poem is found.
     :param model: Composer
@@ -305,18 +305,18 @@ def tebe_search(model: Composer) -> SyntacticObject:
     for c5, is_major in lexicon:
         lexical_array.append(Stufe(c5=c5, major=is_major))
 
-    all_derivations = list()
+    #all_derivations = list()
     spelled = list()
     count = 0
 
     # check for tebe, derive again if necessary
     while TEBE not in spelled:
         count += 1
-        new = model.derive(lexical_array)
+        new, success = model.derive(lexical_array, verbose=False)
         spelled = [ d.spell_out() for d in new ]
-        all_derivations.extend(new)
+        #all_derivations.extend(new)
 
-    return spelled, count, all_derivations
+    return spelled, count, new
 
 
 def main():
@@ -337,6 +337,13 @@ def main():
     print(derivations)
     if len(derivations) > 0:
         print(derivations[-1].spell_out())
+
+    print("\nSearch for tebe\n===============")
+    model = Composer()
+    completed, count, so_list = tebe_search(model)
+    print("Search for tebe finished")
+    print(f"Found surface: {completed}\nafter {count} attempts\n")
+    print([ str(so) for so in so_list ])
 
     return 0
 
