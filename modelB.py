@@ -111,6 +111,10 @@ class ComposerB(Composer):
                     if self.filter(new_so):
                         # found a valid derivation!
                         derivations.append(new_so)
+                else:
+                    # crash clause
+                    if len(current.la) == 0:
+                        break
 
             self.stage_i += 1
             if verbose:
