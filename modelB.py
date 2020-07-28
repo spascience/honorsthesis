@@ -65,6 +65,7 @@ class ComposerB(Composer):
         # order matters
         for so1, so2 in itertools.permutations(stage.workspace, r=2):
             if self.agree(so1, so2):
+                # TODO: stop at first pair found?
                 success = True
                 merges_possible.append(tuple(so1, so2))
 
@@ -125,3 +126,38 @@ class ComposerB(Composer):
             # derivation crashed
             print("Derivation crashed")
             return derivations, False
+
+
+def main():
+    # tebe testing
+    # all stufen hypothesized to be in Bortniansky's Tebe Poem
+    lexicon = [(0, True, False), (0, True, False), (-1, True, False),
+               (2, True, False), (1, True, False), (4, True, False), (0, False, False),
+               (6, False, True), (1, True, False), (0, True, False)]
+    lexical_array = list()
+
+    for c5, is_major, is_dim in lexicon:
+        lexical_array.append(Stufe(c5=c5, major=is_major, dim=is_dim))
+
+    model = Composer()
+    derivations, success = model.derive(lexical_array)
+
+    print("All Derivations\n===============")
+    print(derivations)
+    if len(derivations) > 0:
+        print(derivations[-1].spell_out())
+
+    """
+    print("\nSearch for tebe\n===============")
+    model = Composer()
+    completed, count, so_list = tebe_search(model)
+    print("Search for tebe finished")
+    print(f"Found surface: {completed}\nafter {count} attempts\n")
+    print([str(so) for so in so_list])
+    """
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()
