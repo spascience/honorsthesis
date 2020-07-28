@@ -39,13 +39,20 @@ class Stufe:
     FIFTHS_NAMES_MINOR = ['a', 'e', 'b', 'f#', 'c#', 'g#',
                           'd#', 'a#', 'f', 'c', 'g', 'd']
 
-    def __init__(self, c5=0, c3=0, major=True):
+    def __init__(self, c5=0, major=True, dim=False):
         # default ctor
         self.is_major = major
+        # setting to Major overrides diminished
+        self.is_dim = dim if not major else False
         # circle of fifths value
         self.c5 = c5
-        # circle of thirds value
-        self.c3 = c3
+        # circle of thirds value represents the c5 value
+        # this chord would have after a "covert progression"
+        # (Mukherji, 2014: 358) down a minor third.
+        if self.is_major:
+            self.c3 = (c5 + 3) % 12
+        elif self.is_dim:
+            self.c3 = (c5 + 8) % 12
 
         self.name = self.get_name()
 
@@ -53,6 +60,8 @@ class Stufe:
         # should work for negative cf too
         if self.is_major:
             return self.FIFTHS_NAMES[self.c5 % 12]
+        elif self.is_dim:
+            return self.FIFTHS_NAMES[self.c5 % 12] + "-dim"
         else:
             return self.FIFTHS_NAMES_MINOR[self.c5 % 12]
 
@@ -193,8 +202,8 @@ class Composer:
         :return: Stage
         """
         stage.la = stage.la - {item}
-        # fixme: won't handle multiple copies of same stufe
-        # shouldn't be a problem for tebe though
+        # Stufe doesn't have == overloaded, so workspace
+        # will store distinct copies of otherwise equivalent stufen
         stage.workspace.add(item)
         return stage
 
