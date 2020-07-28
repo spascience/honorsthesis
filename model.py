@@ -158,6 +158,14 @@ class Composer:
         def __str__(self):
             return f"<{str(self.la)}, {str(self.workspace)}>"
 
+        def print(self):
+            # print stage contents nicely
+            print("<{", end='')
+            # lexical array
+            print(*self.la, sep=', ', end='}, {')
+            # workspace
+            print(*self.workspace, sep=', ', end='}>\n')
+
     def __init__(self):
         self.stage_i = 0
 
