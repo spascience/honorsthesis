@@ -47,7 +47,7 @@ class ComposerB(Composer):
         """
 
         # Western Tonal music parameterization
-        do_agree = (0 <= so2.c5 - so1.c5 <= 1) or (0 <= so1.c3 - so1.c5 <= 1)
+        do_agree = (0 <= so1.c5 - so2.c5 <= 1) or (0 <= so1.c3 - so2.c5 <= 1)
         return do_agree
 
     def get_mergables(self, stage: Composer.Stage) -> (bool, list):
@@ -67,7 +67,7 @@ class ComposerB(Composer):
             if self.agree(so1, so2):
                 # TODO: stop at first pair found?
                 success = True
-                merges_possible.append(tuple(so1, so2))
+                merges_possible.append( (so1, so2) )
 
         return success, merges_possible
 
@@ -115,7 +115,7 @@ class ComposerB(Composer):
             self.stage_i += 1
             if verbose:
                 print(f"Stage #{self.stage_i}:")
-                print(current)
+                current.print()
                 print()
 
         # end of derivation
@@ -139,7 +139,7 @@ def main():
     for c5, is_major, is_dim in lexicon:
         lexical_array.append(Stufe(c5=c5, major=is_major, dim=is_dim))
 
-    model = Composer()
+    model = ComposerB()
     derivations, success = model.derive(lexical_array)
 
     print("All Derivations\n===============")
