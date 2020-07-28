@@ -47,12 +47,15 @@ class Stufe:
         # circle of fifths value
         self.c5 = c5
         # circle of thirds value represents the c5 value
-        # this chord would have after a "covert progression"
+        # that this chord would have after a "covert progression"
         # (Mukherji, 2014: 358) down a minor third.
         if self.is_major:
             self.c3 = (c5 + 3) % 12
         elif self.is_dim:
             self.c3 = (c5 + 8) % 12
+        else:
+            # TODO: circle of thirds values for minor Stufen
+            self.c3 = c5
 
         self.name = self.get_name()
 
