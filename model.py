@@ -49,13 +49,11 @@ class Stufe:
         # circle of thirds value represents the c5 value
         # that this chord would have after a "covert progression"
         # (Mukherji, 2014: 358) down a minor third.
-        if self.is_major:
-            self.c3 = (c5 + 3) % 12
-        elif self.is_dim:
+        if self.is_dim:
             self.c3 = (c5 + 8) % 12
         else:
-            # TODO: circle of thirds values for minor Stufen
-            self.c3 = c5
+            # minor and major have same c3
+            self.c3 = (c5 + 3) % 12
 
         self.name = self.get_name()
 
@@ -248,7 +246,7 @@ class Composer:
         stage.workspace.add(new_so)
         return new_so
 
-    def merge_random(self, stage: Stage) -> Stage:
+    def merge_random(self, stage: Stage) -> SyntacticObject:
         """
         Performs Merge on two random SO's in stage.workspace.
 
