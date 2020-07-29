@@ -123,13 +123,43 @@ class ComposerB(Composer):
                 print()
 
         # end of derivation
-        if self.filter(list(current.workspace)[0]):  # awk
-            print("Derivation finished")
-            return derivations, True
-        else:
+        if len(current.workspace) > 1 or not self.filter(list(current.workspace)[0]):  # awk
             # derivation crashed
             print("Derivation crashed")
             return derivations, False
+        else:
+            print("Derivation finished")
+            return derivations, True
+
+
+def tebe_search(model: ComposerB) -> (int, int, list):
+    """
+    Continuously generates surfaces until Tebe poem is found.
+    :param model: Composer
+    :return: SyntacticObject
+    """
+    # all stufen hypothesized to be in Bortniansky's Tebe Poem
+    lexicon = [(0, True, False), (0, True, False), (-1, True, False),
+               (2, True, False), (1, True, False), (4, True, False), (0, False, False),
+               (6, False, True), (1, True, False), (0, True, False)]
+    TEBE = "C C F D G E a F#-dim G C"
+    lexical_array = list()
+
+    for c5, is_major, is_dim in lexicon:
+        lexical_array.append(Stufe(c5=c5, major=is_major, dim=is_dim))
+
+    #all_derivations = list()
+    spelled = list()
+    count = 0
+
+    # check for tebe, derive again if necessary
+    while TEBE not in spelled:
+        count += 1
+        new, success = model.derive(lexical_array, verbose=False)
+        spelled = [ d.spell_out() for d in new ]
+        #all_derivations.extend(new)
+
+    return spelled, count, new
 
 
 def main():
@@ -151,14 +181,12 @@ def main():
     if len(derivations) > 0:
         print(derivations[-1].spell_out())
 
-    """
     print("\nSearch for tebe\n===============")
-    model = Composer()
+    model = ComposerB()
     completed, count, so_list = tebe_search(model)
     print("Search for tebe finished")
     print(f"Found surface: {completed}\nafter {count} attempts\n")
     print([str(so) for so in so_list])
-    """
 
     return 0
 
