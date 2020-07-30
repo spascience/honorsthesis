@@ -48,6 +48,10 @@ class ComposerB(Composer):
 
         # Western Tonal music parameterization
         do_agree = (0 <= so1.c5 - so2.c5 <= 1) or (0 <= so1.c3 - so2.c5 <= 1)
+        # relative major clause for minor Stufen
+        if not do_agree and isinstance(so2, Stufe):
+            do_agree = not so2.is_major and not so2.is_dim \
+                       and (0 <= so1.c5 - so2.c3 <= 1)
         return do_agree
 
     def get_mergables(self, stage: Composer.Stage) -> (bool, list):
@@ -180,6 +184,7 @@ def main():
     print(derivations)
     if len(derivations) > 0:
         print(derivations[-1].spell_out())
+
 
     print("\nSearch for tebe\n===============")
     model = ComposerB()
